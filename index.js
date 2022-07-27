@@ -1,137 +1,118 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var _a = require("mongodb"), MongoClient = _a.MongoClient, ServerApiVersion = _a.ServerApiVersion, ObjectId = _a.ObjectId;
-var express = require('express');
-var cors = require("cors");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const express = require('express');
+const cors = require("cors");
 require("dotenv").config();
-var jwt = require('jsonwebtoken');
-var app = express();
-var port = process.env.PORT || 8000;
+const jwt = require('jsonwebtoken');
+const app= express();
+const port = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json());
+
 // mongoDB Connected
-var uri = "mongodb+srv://".concat(process.env.DB_USER, ":").concat(process.env.DB_PASS, "@cluster0.a16moha.mongodb.net/?retryWrites=true&w=majority");
-var client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.a16moha.mongodb.net/?retryWrites=true&w=majority`;
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
 // verify Authentication
-var verifyJWT = function (req, res, next) {
-    var authHeader = req.headers.authorization;
-    var token = authHeader.split(" ")[1];
+
+const verifyJWT = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader.split(" ")[1];
     if (!authHeader) {
-        return res.status(404).send({ message: "Unauthorize access" });
+      return res.status(404).send({message: "Unauthorize access"})
     }
     if (token) {
-        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-            if (err) {
-                return res.status(403).send({ message: "Forbidden access" });
-            }
-            req.decoded = decoded;
-            next();
-        });
-    }
-};
-function run() {
-    return __awaiter(this, void 0, void 0, function () {
-        var usersCollection_1;
-        var _this = this;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, , 2, 3]);
-                    return [4 /*yield*/, client.connect()];
-                case 1:
-                    _a.sent();
-                    usersCollection_1 = client.db("applicationUser").collection("users");
-                    // create a document to insert
-                    //   const verifyAdmin =async(req, res, next)=>{
-                    //   const requester = req.decoded.email;
-                    //   const requesterAccount = await usersCollection.findOne({email: requester});
-                    //   if (requesterAccount.role === 'admin') {
-                    //     next();
-                    //   }else{
-                    //     res.status(403).send({message: "forbidden access"})
-                    //   }
-                    // }
-                    //User Get
-                    app.get('/user', verifyJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-                        var users;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0: return [4 /*yield*/, usersCollection_1.find({}).toArray()];
-                                case 1:
-                                    users = _a.sent();
-                                    res.send(users);
-                                    return [2 /*return*/];
-                            }
-                        });
-                    }); });
-                    //User Insert/Update
-                    app.put('/user/:email', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-                        var email, user, role, filter, options, updateDoc, result, token;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    email = req.params.email;
-                                    user = req.body;
-                                    role = { role: "user" };
-                                    filter = { email: email };
-                                    options = { upsert: true };
-                                    updateDoc = {
-                                        $set: user
-                                    };
-                                    return [4 /*yield*/, usersCollection_1.updateOne(filter, updateDoc, options)];
-                                case 1:
-                                    result = _a.sent();
-                                    token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
-                                    res.send({ result: result, token: token });
-                                    return [2 /*return*/];
-                            }
-                        });
-                    }); });
-                    return [3 /*break*/, 3];
-                case 2: return [7 /*endfinally*/];
-                case 3: return [2 /*return*/];
-            }
-        });
-    });
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded) {
+        if (err) {
+          return res.status(403).send({message: "Forbidden access"})
+        }
+   req.decoded= decoded;
+   next();
+});
 }
-run()["catch"](console.dir);
-app.get("/", function (req, res) {
-    res.send("Welcome to 'Take Your Smile!");
-});
-app.listen(port, function () {
-    console.log('server is running port of', port);
-});
+    
+}
+async function run() {
+    try {
+      await client.connect();
+      const usersCollection = client.db("applicationUser").collection("users");
+      const customerReviewsCollection = client.db("CustomerReviews").collection("reviews");
+      const RecentEventCollection = client.db("HomePageFeathers").collection("RecentEvents");
+      const SummeryCollection = client.db("HomePageFeathers").collection("Summery");
+      // create a document to insert
+    //   const verifyAdmin =async(req, res, next)=>{
+    //   const requester = req.decoded.email;
+    //   const requesterAccount = await usersCollection.findOne({email: requester});
+    //   if (requesterAccount.role === 'admin') {
+    //     next();
+    //   }else{
+    //     res.status(403).send({message: "forbidden access"})
+    //   }
+    // }
+  
+     //User Get
+    app.get('/user',verifyJWT,async(req, res) => {
+        const users = await usersCollection.find({}).toArray();
+        res.send(users);
+     });
+      //User Insert/Update
+    app.put('/user/:email', async(req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const role = {role: "user"}
+      
+      const filter = {email: email};
+      const options = { upsert: true };
+       const updateDoc = {
+        $set: user
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc, options);
+      const token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'});
+      res.send({result, token});
+    });
+            // Md Abdullah Vai start here 
+            // Get All Reviews from Customer Reviews collection
+
+     app.get("/reviews", async (req, res) => {
+        const query = req.body;
+        const reviews = await customerReviewsCollection.find(query).toArray();
+        res.send(reviews);
+      });
+  
+      // Post a reviews from Customer Reviews collection
+  
+      app.post("/reviews", async (req, res) => {
+        const query = req.body;
+        const review = await customerReviewsCollection.insertOne(query);
+        res.send(review);
+      });
+  
+        // Get All Recent Event  from Home Pages Feathers collection
+  
+        app.get("/recentEvents", async (req, res) => {
+          const query = req.body;
+          const reviews = await RecentEventCollection.find(query).toArray();
+          res.send(reviews);
+        });
+  
+          // Get All Recent Event  from Home Pages Feathers collection
+  
+          app.get("/summery", async (req, res) => {
+            const query = req.body;
+            const reviews = await SummeryCollection.find(query).toArray();
+            res.send(reviews);
+          });
+  
+    } finally {
+      // await client.close();
+    }
+  }
+  run().catch(console.dir);
+  
+
+
+app.get("/", (req, res) => {
+    res.send("Welcome to 'Take Your Smile??!")
+  });
+  app.listen(port, () => {
+      console.log('server is running port of', port);
+  })
