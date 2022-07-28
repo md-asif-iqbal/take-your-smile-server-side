@@ -38,7 +38,7 @@ async function run() {
       const customerReviewsCollection = client.db("CustomerReviews").collection("reviews");
       const RecentEventCollection = client.db("HomePageFeathers").collection("RecentEvents");
       const SummeryCollection = client.db("HomePageFeathers").collection("Summery");
-      // create a document to insert
+
     //   const verifyAdmin =async(req, res, next)=>{
     //   const requester = req.decoded.email;
     //   const requesterAccount = await usersCollection.findOne({email: requester});
@@ -78,7 +78,7 @@ async function run() {
         res.send(reviews);
       });
   
-      // Post a reviews from Customer Reviews collection
+      // Post a reviews from Customer Reviews 
   
       app.post("/reviews", async (req, res) => {
         const query = req.body;
