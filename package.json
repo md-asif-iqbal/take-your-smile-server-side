@@ -10,9 +10,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+  
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
+
     "mongodb": "^4.8.1"
   },
   "repository": {
@@ -25,4 +27,10 @@
   },
   "homepage": "https://github.com/md-asif-iqbal/take-your-smile-server-side#readme",
   "description": ""
+
+    "jsonwebtoken": "^8.5.1",
+    "mongodb": "^4.8.1",
+    "nodemon": "^2.0.19"
+  }
+
 }
