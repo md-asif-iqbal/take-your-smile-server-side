@@ -105,7 +105,7 @@ async function run() {
       res.send(review);
     });
 
-      // Get All Recent Event  from Home Pages Feathers collection
+      // Get All Recent Event  from Home Pages Feathers collections
 
       app.get("/recentEvents", async (req, res) => {
         const query = req.body;
