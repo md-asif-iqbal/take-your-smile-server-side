@@ -105,7 +105,7 @@ async function run() {
       res.send(review);
     });
 
-      // Get All Recent Event  from Home Pages Feathers collections
+      // Get All Recent Event  from Home Pages Feathers collection
 
       app.get("/recentEvents", async (req, res) => {
         const query = req.body;
@@ -113,6 +113,11 @@ async function run() {
         res.send(reviews);
       });
 
+      app.post("/recentEvents", async (req, res) => {
+        const query = req.body;
+        const review = await customerReviewsCollection.insertOne(query);
+        res.send(review);
+      });
         // Get All Recent Event  from Home Pages Feathers collection
 
         app.get("/summery", async (req, res) => {
