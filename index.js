@@ -1,4 +1,4 @@
-
+const jwt = require('jsonwebtoken');
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -42,6 +42,7 @@ async function run() {
     const customerReviewsCollection = client.db("CustomerReviews").collection("reviews");
     const RecentEventCollection = client.db("HomePageFeathers").collection("RecentEvents");
     const SummeryCollection = client.db("HomePageFeathers").collection("Summery");
+    const usersCollection = client.db("applicationUser").collection("users");
 
 
   
@@ -65,8 +66,29 @@ async function run() {
     const token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'});
     res.send({result, token});
   });
+
+  // User Profile Update
+   app.put('/user/:email', async(req, res) => {
+    const email = req.params.email;
+    const userInfo = req.body;
+    const filter = {email: email};
+    const options = { upsert: true };
+    const updateDoc = {
+            $set: userInfo
+        };
+    const result = await usersCollection.updateOne(filter, updateDoc, options);
+    res.send(result);
+    });
+        //user user details
+    app.get('/user/:email', async (req, res) => {
+        const email = req.params.email;
+        const query = {email:email}
+        const user = await usersCollection.findOne(query);
+        res.send(user)
+    })
+
           // Md Abdullah Vai start here 
-          // Get All Reviews from Customer Reviews collection
+          // Get All Reviews  Customer Reviews collection
      // Get All Reviews from Customer Reviews collection
 
      app.get("/reviews", async (req, res) => {
