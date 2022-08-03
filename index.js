@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const port = process.env.PORT || 8000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId, ObjectID } = require("mongodb");
 require("dotenv").config();
 app.use(cors());
 app.use(express.json());
@@ -16,18 +16,18 @@ const verifyJWT = (req, res, next) => {
   const authHeader = req.headers.authorization;
   const token = authHeader.split(" ")[1];
   if (!authHeader) {
-    return res.status(404).send({message: "Unauthorize access"})
+    return res.status(404).send({ message: "Unauthorize access" })
   }
   if (token) {
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded) {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
       if (err) {
-        return res.status(403).send({message: "Forbidden access"})
+        return res.status(403).send({ message: "Forbidden access" })
       }
- req.decoded= decoded;
- next();
-});
-}
-  
+      req.decoded = decoded;
+      next();
+    });
+  }
+
 }
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.a16moha.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
@@ -43,60 +43,65 @@ async function run() {
     const RecentEventCollection = client.db("HomePageFeathers").collection("RecentEvents");
     const SummeryCollection = client.db("HomePageFeathers").collection("Summery");
     const usersCollection = client.db("applicationUser").collection("users");
+    const postsCollection = client.db("applicationUser").collection("posts");
+    const userPostsCollection = client.db("applicationUser").collection("userPosts");
 
 
-  
-     //User Get
-     app.get('/user',verifyJWT,async(req, res) => {
+
+
+    //User Get
+    app.get('/user', verifyJWT, async (req, res) => {
       const users = await usersCollection.find({}).toArray();
       res.send(users);
-   });
-    //User Insert/Update
-  app.put('/user/:email', async(req, res) => {
-    const email = req.params.email;
-    const user = req.body;
-    const role = {role: "user"}
-    
-    const filter = {email: email};
-    const options = { upsert: true };
-     const updateDoc = {
-      $set: user
-    };
-    const result = await usersCollection.updateOne(filter, updateDoc, options);
-    const token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'});
-    res.send({result, token});
-  });
-
-  // User Profile Update
-   app.put('/user/:email', async(req, res) => {
-    const email = req.params.email;
-    const userInfo = req.body;
-    const filter = {email: email};
-    const options = { upsert: true };
-    const updateDoc = {
-            $set: userInfo
-        };
-    const result = await usersCollection.updateOne(filter, updateDoc, options);
-    res.send(result);
     });
-        //user user details
+    //User Insert/Update
+    app.put('/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const role = { role: "user" }
+
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc, options);
+      const token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
+      res.send({ result, token });
+    });
+
+    // User Profile Update
+    app.put('/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const userInfo = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: userInfo
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc, options);
+      res.send(result);
+    });
+    //user user details
     app.get('/user/:email', async (req, res) => {
-        const email = req.params.email;
-        const query = {email:email}
-        const user = await usersCollection.findOne(query);
-        res.send(user)
+      const email = req.params.email;
+      const query = { email: email }
+      const user = await usersCollection.findOne(query);
+      res.send(user)
     })
 
-          // Md Abdullah Vai start here 
-          // Get All Reviews  Customer Reviews collection
-     // Get All Reviews from Customer Reviews collection
+    // Md Abdullah Vai start here 
+    // Get All Reviews  Customer Reviews collection
+    // Get All Reviews from Customer Reviews collection
 
-     app.get("/reviews", async (req, res) => {
+    app.get("/reviews", async (req, res) => {
       const query = req.body;
       const reviews = await customerReviewsCollection.find(query).toArray();
       res.send(reviews);
     });
-    
+
+
+
     // Post a reviews from Customer Reviews collection
 
     app.post("/reviews", async (req, res) => {
@@ -105,26 +110,63 @@ async function run() {
       res.send(review);
     });
 
-      // Get All Recent Event  from Home Pages Feathers collection
+    // Get All Recent Event  from Home Pages Feathers collection
 
-      app.get("/recentEvents", async (req, res) => {
-        const query = req.body;
-        const reviews = await RecentEventCollection.find(query).toArray();
-        res.send(reviews);
-      });
+    app.get("/recentEvents", async (req, res) => {
+      const query = req.body;
+      const reviews = await RecentEventCollection.find(query).toArray();
+      res.send(reviews);
+    });
 
-      app.post("/recentEvents", async (req, res) => {
-        const query = req.body;
-        const review = await customerReviewsCollection.insertOne(query);
-        res.send(review);
-      });
-        // Get All Recent Event  from Home Pages Feathers collection
+    app.post("/recentEvents", async (req, res) => {
+      const query = req.body;
+      const review = await customerReviewsCollection.insertOne(query);
+      res.send(review);
+    });
+    // Get All Recent Event  from Home Pages Feathers collection
 
-        app.get("/summery", async (req, res) => {
-          const query = req.body;
-          const reviews = await SummeryCollection.find(query).toArray();
-          res.send(reviews);
-        });
+    app.get("/summery", async (req, res) => {
+      const query = req.body;
+      const reviews = await SummeryCollection.find(query).toArray();
+      res.send(reviews);
+    });
+
+
+    // Fahim vai Starts From here
+    // Get Posts
+    app.get("/posts", async (req, res) => {
+      const query = req.body;
+      const posts = await postsCollection.find(query).toArray();
+      res.send(posts);
+    });
+
+    app.get("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      // console.log(id)
+      const query = { _id: ObjectId(id) };
+      const post = await postsCollection.findOne(query);
+      res.send(post)
+
+    });
+
+    app.put('/posts/:id', async (req, res) => {
+      const id = req.params.id;
+      const update = req.body;
+      console.log(update)
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          likes: update.totalLikes,
+          email: update.email,
+          like: update.liked
+
+        }
+      };
+      const result = await postsCollection.updateOne(filter, updatedDoc, options);
+      res.send(result);
+    });
+
 
   } finally {
   }
