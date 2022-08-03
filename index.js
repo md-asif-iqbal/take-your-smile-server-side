@@ -5,7 +5,9 @@ const cors = require("cors");
 const port = process.env.PORT || 8000;
 const { MongoClient, ServerApiVersion } = require("mongodb");
 require("dotenv").config();
-app.use(cors());
+app.use(cors({
+  methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH']
+}));
 app.use(express.json());
 
 
@@ -43,9 +45,8 @@ async function run() {
     const RecentEventCollection = client.db("HomePageFeathers").collection("RecentEvents");
     const SummeryCollection = client.db("HomePageFeathers").collection("Summery");
     const usersCollection = client.db("applicationUser").collection("users");
-
-
-  
+    const adminCollection = client.db("applicationUser").collection("admin");
+    const blogsCollection = client.db("allBlogs").collection("blogs");
      //User Get
      app.get('/user',verifyJWT,async(req, res) => {
       const users = await usersCollection.find({}).toArray();
@@ -63,6 +64,19 @@ async function run() {
       $set: user
     };
     const result = await usersCollection.updateOne(filter, updateDoc, options);
+    const token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'});
+    res.send({result, token});
+  });
+  //admin/manager/editor Insert/Update
+  app.put('/admin/:email', async(req, res) => {
+    const email = req.params.email;
+    const user = req.body;    
+    const filter = {email: email};
+    const options = { upsert: true };
+     const updateDoc = {
+      $set: user
+    };
+    const result = await adminCollection.updateOne(filter, updateDoc, options);
     const token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'});
     res.send({result, token});
   });
@@ -86,6 +100,7 @@ async function run() {
         const user = await usersCollection.findOne(query);
         res.send(user)
     })
+    
 
           // Md Abdullah Vai start here 
           // Get All Reviews  Customer Reviews collection
@@ -98,7 +113,6 @@ async function run() {
     });
     
     // Post a reviews from Customer Reviews collection
-
     app.post("/reviews", async (req, res) => {
       const query = req.body;
       const review = await customerReviewsCollection.insertOne(query);
@@ -125,7 +139,20 @@ async function run() {
           const reviews = await SummeryCollection.find(query).toArray();
           res.send(reviews);
         });
+        // All Blog section (blog post get, post, delete, update)
 
+        //post blog
+        app.post("/blogs", async (req, res) => {
+          const query = req.body;
+          const blog = await blogsCollection.insertOne(query);
+          res.send(blog);
+        });
+      // Get All Blog post
+        app.get("/blogs", async (req, res) => {
+          const blogs = await blogsCollection.find({}).toArray();
+          res.send(blogs);
+        });
+ 
   } finally {
   }
 }
