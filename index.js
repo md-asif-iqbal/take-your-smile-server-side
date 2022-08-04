@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const port = process.env.PORT || 8000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 app.use(cors({
   methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH']
@@ -152,7 +152,14 @@ async function run() {
           const blogs = await blogsCollection.find({}).toArray();
           res.send(blogs);
         });
- 
+        // Get single Blog post
+        app.get("/blogs/:id", async (req, res) => {
+          const id = req.params.id;
+          const query = {_id: ObjectId(id)};
+          const blogs = await blogsCollection.findOne(query);
+          res.send(blogs);
+        });
+        
   } finally {
   }
 }
