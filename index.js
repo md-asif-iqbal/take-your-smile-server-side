@@ -652,39 +652,7 @@ async function run() {
         // Abdulla vai End services
         // Fahim vai Starts From here
     // Get Posts
-    app.get("/posts", async (req, res) => {
-      const query = req.body;
-      const posts = await postsCollection.find(query).toArray();
-      res.send(posts);
-    });
-
-    app.get("/posts/:id", async (req, res) => {
-      const id = req.params.id;
-      // console.log(id)
-      const query = { _id: ObjectId(id) };
-      const post = await postsCollection.findOne(query);
-      res.send(post)
-
-    });
-
-    app.put('/posts/:id', async (req, res) => {
-      const id = req.params.id;
-      const update = req.body;
-      console.log(update)
-      const filter = { _id: ObjectId(id) };
-      const options = { upsert: true };
-      const updatedDoc = {
-        $set: {
-          likes: update.totalLikes,
-          email: update.email,
-          like: update.liked
-
-        }
-      };
-      const result = await postsCollection.updateOne(filter, updatedDoc, options);
-      res.send(result);
-    });
-
+    
 
 
   } finally {
