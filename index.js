@@ -44,7 +44,7 @@ async function run() {
     const SummeryCollection = client.db("HomePageFeathers").collection("Summery");
     const usersCollection = client.db("applicationUser").collection("users");
     const adminCollection = client.db("applicationUser").collection("admin");
-
+    const blogsCollection = client.db("allBlogs").collection("blogs");
 
   
      //User Get
@@ -101,6 +101,26 @@ async function run() {
         const user = await usersCollection.findOne(query);
         res.send(user)
     })
+    // blog post Rana Arju Vai
+      // Get All Blog post
+      app.get("/blogs", async (req, res) => {
+        const blogs = await blogsCollection.find({}).toArray();
+        res.send(blogs);
+      });
+      // Get single Blog post
+      app.get("/blogs/:id", async (req, res) => {
+        const id = req.params.id;
+        const query = {_id: ObjectId(id)};
+        const blogs = await blogsCollection.findOne(query);
+        res.send(blogs);
+      });
+//post blog
+      app.post("/blogs", async (req, res) => {
+        const query = req.body;
+        const blog = await blogsCollection.insertOne(query);
+        res.send(blog);
+      });
+    // Blog post End here
 
           // Md Abdullah Vai start here 
           // Get All Reviews  Customer Reviews collection
