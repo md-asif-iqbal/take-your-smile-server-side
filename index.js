@@ -1,14 +1,17 @@
 const jwt = require('jsonwebtoken');
 const express = require("express");
 const app = express();
-const cors = require("cors");
+const cors = require("cors",{
+  methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH']
+},
+{
+  origin: "*"
+});
 const port = process.env.PORT || 8000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 app.use(cors());
 app.use(express.json());
-
-
 
 // verify Authentication
 
@@ -44,9 +47,10 @@ async function run() {
     const SummeryCollection = client.db("HomePageFeathers").collection("Summery");
     const usersCollection = client.db("applicationUser").collection("users");
     const adminCollection = client.db("applicationUser").collection("admin");
+    const articleCollection = client.db("allBlogs").collection("blogs");
 
 
-  
+
      //User Get
      app.get('/user',verifyJWT,async(req, res) => {
       const users = await usersCollection.find({}).toArray();
@@ -69,7 +73,7 @@ async function run() {
   });
 
   // User Profile Update
-   app.put('/user/:email', async(req, res) => {
+   app.put('/user/:email',verifyJWT, async(req, res) => {
     const email = req.params.email;
     const userInfo = req.body;
     const filter = {email: email};
@@ -94,14 +98,39 @@ async function run() {
     const token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'});
     res.send({result, token});
   });
-        //user user details
-    app.get('/user/:email', async (req, res) => {
+        //user details
+    app.get('/user/:email',verifyJWT, async (req, res) => {
         const email = req.params.email;
         const query = {email:email}
         const user = await usersCollection.findOne(query);
         res.send(user)
     })
-
+       //admin details
+    app.get('/admin/:email',verifyJWT, async (req, res) => {
+        const email = req.params.email;
+        const query = {email:email}
+        const user = await adminCollection.findOne(query);
+        res.send(user)
+    })
+        // All Blog section (blog post get, post, delete, update)
+                  //post blog
+    app.post("/articles", async (req, res) => {
+          const query = req.body;
+          const article = await articleCollection.insertOne(query);
+          res.send(article);
+        });
+              // Get All Blog post
+    app.get("/articles", async (req, res) => {
+          const articles = await articleCollection.find({}).toArray();
+          res.send(articles);
+        });
+              // Get single Blog post
+    app.get("/articles/:id", async (req, res) => {
+          const id = req.params.id;
+          const query = {_id: ObjectId(id)};
+          const articles = await articleCollection.findOne(query);
+          res.send(articles);
+        });
           // Md Abdullah Vai start here 
           // Get All Reviews  Customer Reviews collection
      // Get All Reviews from Customer Reviews collection
@@ -641,8 +670,3 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Event app listening on port ${port}`);
 });
-
-// hello
-
-
-
