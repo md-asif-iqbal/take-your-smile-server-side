@@ -48,6 +48,7 @@ async function run() {
     const usersCollection = client.db("applicationUser").collection("users");
     const adminCollection = client.db("applicationUser").collection("admin");
     const articleCollection = client.db("allBlogs").collection("blogs");
+    const sponsorCollection = client.db('Sponsorship').collection('sponsor');
 
 
 
@@ -131,6 +132,21 @@ async function run() {
           const articles = await articleCollection.findOne(query);
           res.send(articles);
         });
+        // Shoponsorship
+
+        // post shonsorship
+        app.post("/sponsor", async (req, res) => {
+          const query = req.body;
+          const sponsor = await sponsorCollection.insertOne(query);
+          res.send(sponsor);
+        });
+
+        // get sponsor
+        app.get("/sponsor", async (req, res) => {
+          const sponsor = await sponsorCollection.find({}).toArray();
+          res.send(sponsor);
+        });
+
           // Md Abdullah Vai start here 
           // Get All Reviews  Customer Reviews collection
      // Get All Reviews from Customer Reviews collection
