@@ -2,8 +2,16 @@ const jwt = require('jsonwebtoken');
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const cors = require("cors",{
+  methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH']
+},
+{
+  origin: "*"
+});
 const port = process.env.PORT || 8000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const req = require('express/lib/request');
+const res = require('express/lib/response');
 require("dotenv").config();
 app.use(cors());
 app.use(express.json());
@@ -45,6 +53,8 @@ async function run() {
     const usersCollection = client.db("applicationUser").collection("users");
     const adminCollection = client.db("applicationUser").collection("admin");
     const blogsCollection = client.db("allBlogs").collection("blogs");
+    const galleryCollection = client.db("gallery").collection("galleryData");
+    const articleCollection = client.db("allBlogs").collection("blogs");
 
   
      //User Get
@@ -95,30 +105,31 @@ async function run() {
     res.send({result, token});
   });
         //user user details
-    app.get('/user/:email', async (req, res) => {
-        const email = req.params.email;
-        const query = {email:email}
-        const user = await usersCollection.findOne(query);
-        res.send(user)
-    })
+        //user details
+        app.get('/user/:email',verifyJWT, async (req, res) => {
+          const email = req.params.email;
+          const query = {email:email}
+          const user = await usersCollection.findOne(query);
+          res.send(user)
+      })
     // blog post Rana Arju Vai
       // Get All Blog post
-      app.get("/blogs", async (req, res) => {
-        const blogs = await blogsCollection.find({}).toArray();
-        res.send(blogs);
+      app.post("/articles", async (req, res) => {
+        const query = req.body;
+        const article = await articleCollection.insertOne(query);
+        res.send(article);
       });
-      // Get single Blog post
-      app.get("/blogs/:id", async (req, res) => {
+            // Get All Blog post
+  app.get("/articles", async (req, res) => {
+        const articles = await articleCollection.find({}).toArray();
+        res.send(articles);
+      });
+            // Get single Blog post
+  app.get("/articles/:id", async (req, res) => {
         const id = req.params.id;
         const query = {_id: ObjectId(id)};
-        const blogs = await blogsCollection.findOne(query);
-        res.send(blogs);
-      });
-//post blog
-      app.post("/blogs", async (req, res) => {
-        const query = req.body;
-        const blog = await blogsCollection.insertOne(query);
-        res.send(blog);
+        const articles = await articleCollection.findOne(query);
+        res.send(articles);
       });
     // Blog post End here
 
@@ -650,12 +661,20 @@ async function run() {
 
           
         // Abdulla vai End services
-        // Fahim vai Starts From here
-    // Get Posts
-    
+
+    // Asif's Start here
+    app.get("/gallerys", async (req, res) => {
+      const query = req.body;
+      const gallery = await galleryCollection.find(query).toArray();
+      // console.log("abvx");
+      res.send(gallery);
+    });
+  
+    // Asif's End Here
 
 
-  } finally {
+  } 
+  finally {
   }
 }
 run().catch(console.dir);
