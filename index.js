@@ -54,14 +54,23 @@ async function run() {
     const blogsCollection = client.db("allBlogs").collection("blogs");
     const galleryCollection = client.db("gallery").collection("galleryData");
     const articleCollection = client.db("allBlogs").collection("blogs");
-
-  
+    const sponsorCollection = client.db('Sponsorship').collection('sponsor');
+    const postsCollection = client.db("applicationUser").collection("posts");
+    // const UsersCollection = client.db("applicationUser").collection("users");
+    const bookingCollection = client.db("booking").collection("orders");
      //User Get
-     app.get('/user',verifyJWT,async(req, res) => {
-      const users = await usersCollection.find({}).toArray();
-      res.send(users);
-   });
+  //    app.get('/user',verifyJWT,async(req, res) => {
+  //     const users = await usersCollection.find({}).toArray();
+  //     res.send(users);
+  //  });
     //User Insert/Update
+
+            //User Get
+            app.get("/usersdata", async (req, res) => {
+              const query = req.body;
+              const usersData = await usersCollection.find(query).toArray();
+              res.send(usersData);
+            });
   app.put('/user/:email', async(req, res) => {
     const email = req.params.email;
     const user = req.body;
@@ -131,8 +140,67 @@ async function run() {
         res.send(articles);
       });
     // Blog post End here
+     // Shoponsorship
+
+        // post shonsorship
+        // post shonsorship
+        app.post("/sponsor", async (req, res) => {
+          const query = req.body;
+          const sponsor = await sponsorCollection.insertOne(query);
+          res.send(sponsor);
+        });
+        // app.put('/sponsor/:id', async(req, res) => {
+        //   const id = req.params.id;
+        //   const sponsor = req.body;
+        //   const query = { _id: ObjectId(id) };  
+        //   const options = { upsert: true };
+        //    const updateDoc = {
+        //     $set: sponsor
+        //   };
+        //   const result = await sponsorCollection.updateOne(query, updateDoc, options);
+        //   res.send(result);
+        // });
+
+        // get sponsor
+        app.get("/sponsor", async (req, res) => {
+          const sponsor = await sponsorCollection.find({}).toArray();
+          res.send(sponsor);
+        });
 
           // Md Abdullah Vai start here 
+          app.get("/orders", async (req, res) => {
+            const query = req.body;
+            const booking = await bookingCollection.find(query).toArray();
+            res.send(booking);
+          });
+      
+          app.post("/orders", async (req, res) => {
+            const booking = req.body;
+            const query = {
+              location: booking.location,
+              date: booking.date,
+              service: booking.service,
+            };
+            const exists = await bookingCollection.findOne(query);
+            if (exists) {
+              return res.send({ success: false, booking: exists });
+            }
+            const result = await bookingCollection.insertOne(booking);
+            return res.send({ success: true, result });
+          });
+          // Asif's Start here
+         
+          app.get("/gallerys", async (req, res) => {
+            const query = req.body;
+            const gallery = await galleryCollection.find(query).toArray();
+            res.send(gallery);
+          });
+      
+          app.post("/gallerys", async (req, res) => {
+            const query = req.body;
+            const gallery = await galleryCollection.insertOne(query);
+            res.send(gallery);
+          });
           // Get All Reviews  Customer Reviews collection
      // Get All Reviews from Customer Reviews collection
 
@@ -646,20 +714,20 @@ async function run() {
           res.send(PaintJam);
         });
     
-        const BookingCollection = client.db("booking").collection("orders");
         app.post("/orders", async (req, res) => {
           const query = req.body;
-          const booking = await BookingCollection.insertOne(query);
+          const booking = await bookingCollection.insertOne(query);
           res.send(booking);
         });
         app.get("/orders", async (req, res) => {
           const query = req.body;
-          const booking = await BookingCollection.find(query).toArray();
+          const booking = await bookingCollection.find(query).toArray();
           res.send(booking);
         });
 
           
         // Abdulla vai End services
+
 
     // Asif's Start here
     app.get("/gallerys", async (req, res) => {
@@ -670,7 +738,40 @@ async function run() {
     });
   
     // Asif's End Here
+// Fahim vai here
+app.get("/posts", async (req, res) => {
+  const query = req.body;
+  const posts = await postsCollection.find(query).toArray();
+  res.send(posts);
+});
 
+app.get("/posts/:id", async (req, res) => {
+  const id = req.params.id;
+  // console.log(id)
+  const query = { _id: ObjectId(id) };
+  const post = await postsCollection.findOne(query);
+  res.send(post)
+
+});
+
+app.put('/posts/:id', async (req, res) => {
+  const id = req.params.id;
+  const update = req.body;
+  console.log(update)
+  const filter = { _id: ObjectId(id) };
+  const options = { upsert: true };
+  const updatedDoc = {
+    $set: {
+      likes: update.totalLikes,
+      email: update.email,
+      like: update.liked
+
+    }
+  };
+  const result = await postsCollection.updateOne(filter, updatedDoc, options);
+  res.send(result);
+});
+//   fahim vai End
 
   } 
   finally {
