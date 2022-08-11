@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const express = require("express");
 const app = express();
-const cors = require("cors");
 const cors = require("cors",{
   methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH']
 },
