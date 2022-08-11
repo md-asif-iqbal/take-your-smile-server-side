@@ -140,6 +140,17 @@ async function run() {
           const sponsor = await sponsorCollection.insertOne(query);
           res.send(sponsor);
         });
+        app.put('/sponsor/:id', async(req, res) => {
+          const id = req.params.id;
+          const sponsor = req.body;
+          const query = { _id: ObjectId(id) };  
+          const options = { upsert: true };
+           const updateDoc = {
+            $set: sponsor
+          };
+          const result = await sponsorCollection.updateOne(query, updateDoc, options);
+          res.send(result);
+        });
 
         // get sponsor
         app.get("/sponsor", async (req, res) => {
@@ -203,7 +214,6 @@ async function run() {
     
         app.get("/package/:id", async (req, res) => {
           const id = req.params.id;
-          console.log(id);
           const query = { _id: ObjectId(id) };
           const package = await PackageCollection.findOne(query);
           res.send(package);
