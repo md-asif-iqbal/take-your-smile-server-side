@@ -9,15 +9,19 @@ const cors = require("cors",{
 });
 const port = process.env.PORT || 8000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const req = require('express/lib/request');
+const res = require('express/lib/response');
 require("dotenv").config();
 app.use(cors());
 app.use(express.json());
+
+
 
 // verify Authentication
 
 const verifyJWT = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  const token = authHeader.split(" ")[1];
+  const token = authHeader?.split(" ")[1];
   if (!authHeader) {
     return res.status(404).send({message: "Unauthorize access"})
   }
@@ -26,8 +30,8 @@ const verifyJWT = (req, res, next) => {
       if (err) {
         return res.status(403).send({message: "Forbidden access"})
       }
- req.decoded= decoded;
- next();
+      req.decoded= decoded;
+      next();
 });
 }
   
@@ -47,22 +51,27 @@ async function run() {
     const SummeryCollection = client.db("HomePageFeathers").collection("Summery");
     const usersCollection = client.db("applicationUser").collection("users");
     const adminCollection = client.db("applicationUser").collection("admin");
+    const blogsCollection = client.db("allBlogs").collection("blogs");
+    const galleryCollection = client.db("gallery").collection("galleryData");
     const articleCollection = client.db("allBlogs").collection("blogs");
-    const sponsorCollection = client.db('Sponsorship').collection('sponsor');
 
-
-
+  
      //User Get
-     app.get('/user',verifyJWT,async(req, res) => {
+     app.get('/user',async(req, res) => {
       const users = await usersCollection.find({}).toArray();
       res.send(users);
    });
+     //user user details
+     app.get('/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = {email:email}
+      const user = await usersCollection.findOne(query);
+      res.send(user)
+    })
     //User Insert/Update
   app.put('/user/:email', async(req, res) => {
     const email = req.params.email;
     const user = req.body;
-    const role = {role: "user"}
-    
     const filter = {email: email};
     const options = { upsert: true };
      const updateDoc = {
@@ -74,7 +83,7 @@ async function run() {
   });
 
   // User Profile Update
-   app.put('/user/:email',verifyJWT, async(req, res) => {
+   app.put('/user/:email', async(req, res) => {
     const email = req.params.email;
     const userInfo = req.body;
     const filter = {email: email};
@@ -99,64 +108,34 @@ async function run() {
     const token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'});
     res.send({result, token});
   });
+        //user user details
         //user details
-    app.get('/user/:email',verifyJWT, async (req, res) => {
-        const email = req.params.email;
-        const query = {email:email}
-        const user = await usersCollection.findOne(query);
-        res.send(user)
+    app.get('/admin/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = {email:email}
+      const user = await adminCollection.findOne(query);
+      res.send(user)
     })
-       //admin details
-    app.get('/admin/:email',verifyJWT, async (req, res) => {
-        const email = req.params.email;
-        const query = {email:email}
-        const user = await adminCollection.findOne(query);
-        res.send(user)
-    })
-        // All Blog section (blog post get, post, delete, update)
-                  //post blog
-    app.post("/articles", async (req, res) => {
-          const query = req.body;
-          const article = await articleCollection.insertOne(query);
-          res.send(article);
-        });
-              // Get All Blog post
-    app.get("/articles", async (req, res) => {
-          const articles = await articleCollection.find({}).toArray();
-          res.send(articles);
-        });
-              // Get single Blog post
-    app.get("/articles/:id", async (req, res) => {
-          const id = req.params.id;
-          const query = {_id: ObjectId(id)};
-          const articles = await articleCollection.findOne(query);
-          res.send(articles);
-        });
-        // Shoponsorship
-
-        // post shonsorship
-        app.post("/sponsor", async (req, res) => {
-          const query = req.body;
-          const sponsor = await sponsorCollection.insertOne(query);
-          res.send(sponsor);
-        });
-        app.put('/sponsor/:id', async(req, res) => {
-          const id = req.params.id;
-          const sponsor = req.body;
-          const query = { _id: ObjectId(id) };  
-          const options = { upsert: true };
-           const updateDoc = {
-            $set: sponsor
-          };
-          const result = await sponsorCollection.updateOne(query, updateDoc, options);
-          res.send(result);
-        });
-
-        // get sponsor
-        app.get("/sponsor", async (req, res) => {
-          const sponsor = await sponsorCollection.find({}).toArray();
-          res.send(sponsor);
-        });
+    // blog post Rana Arju Vai
+      // Get All Blog post
+      app.post("/articles", async (req, res) => {
+        const query = req.body;
+        const article = await articleCollection.insertOne(query);
+        res.send(article);
+      });
+            // Get All Blog post
+  app.get("/articles", async (req, res) => {
+        const articles = await articleCollection.find({}).toArray();
+        res.send(articles);
+      });
+            // Get single Blog post
+  app.get("/articles/:id", async (req, res) => {
+        const id = req.params.id;
+        const query = {_id: ObjectId(id)};
+        const articles = await articleCollection.findOne(query);
+        res.send(articles);
+      });
+    // Blog post End here
 
           // Md Abdullah Vai start here 
           // Get All Reviews  Customer Reviews collection
@@ -214,6 +193,7 @@ async function run() {
     
         app.get("/package/:id", async (req, res) => {
           const id = req.params.id;
+          console.log(id);
           const query = { _id: ObjectId(id) };
           const package = await PackageCollection.findOne(query);
           res.send(package);
@@ -682,10 +662,23 @@ async function run() {
           const booking = await BookingCollection.find(query).toArray();
           res.send(booking);
         });
+
           
         // Abdulla vai End services
 
-  } finally {
+    // Asif's Start here
+    app.get("/gallerys", async (req, res) => {
+      const query = req.body;
+      const gallery = await galleryCollection.find(query).toArray();
+      // console.log("abvx");
+      res.send(gallery);
+    });
+  
+    // Asif's End Here
+
+
+  } 
+  finally {
   }
 }
 run().catch(console.dir);
