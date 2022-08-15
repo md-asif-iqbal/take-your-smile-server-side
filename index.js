@@ -1,12 +1,7 @@
 const jwt = require('jsonwebtoken');
 const express = require("express");
 const app = express();
-const cors = require("cors",{
-  methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH']
-},
-{
-  origin: "*"
-});
+const cors = require("cors");
 const port = process.env.PORT || 8000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const req = require('express/lib/request');
@@ -14,8 +9,6 @@ const res = require('express/lib/response');
 require("dotenv").config();
 app.use(cors());
 app.use(express.json());
-
-
 
 // verify Authentication
 
@@ -54,6 +47,7 @@ async function run() {
     const blogsCollection = client.db("allBlogs").collection("blogs");
     const galleryCollection = client.db("gallery").collection("galleryData");
     const articleCollection = client.db("allBlogs").collection("blogs");
+    const sponsorCollection = client.db('Sponsorship').collection('sponsor');
 
   
      //User Get
@@ -62,11 +56,18 @@ async function run() {
       res.send(users);
    });
      //user user details
-     app.get('/user/:email', async (req, res) => {
+     app.get('/user/:email',verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
       const email = req.params.email;
-      const query = {email:email}
-      const user = await usersCollection.findOne(query);
-      res.send(user)
+      if (email === decodedEmail) {
+        const query = {email:email}
+        const user = await usersCollection.findOne(query);
+        res.send(user)
+      }
+      else{
+        res.status(403).send({message: "Forbidden Access!"})
+      }
+    
     })
     //User Insert/Update
   app.put('/user/:email', async(req, res) => {
@@ -83,17 +84,17 @@ async function run() {
   });
 
   // User Profile Update
-   app.put('/user/:email', async(req, res) => {
-    const email = req.params.email;
-    const userInfo = req.body;
-    const filter = {email: email};
-    const options = { upsert: true };
-    const updateDoc = {
-            $set: userInfo
-        };
-    const result = await usersCollection.updateOne(filter, updateDoc, options);
-    res.send(result);
-    });
+  //  app.put('/user/:email', async(req, res) => {
+  //   const email = req.params.email;
+  //   const userInfo = req.body;
+  //   const filter = {email: email};
+  //   const options = { upsert: true };
+  //   const updateDoc = {
+  //           $set: userInfo
+  //       };
+  //   const result = await usersCollection.updateOne(filter, updateDoc, options);
+  //   res.send(result);
+  //   });
 
     //admin/manager/editor Insert/Update
   app.put('/admin/:email', async(req, res) => {
@@ -110,15 +111,21 @@ async function run() {
   });
         //user user details
         //user details
-    app.get('/admin/:email', async (req, res) => {
+    app.get('/admin/:email',verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
       const email = req.params.email;
-      const query = {email:email}
-      const user = await adminCollection.findOne(query);
-      res.send(user)
+      if (email === decodedEmail) {
+        const query = {email:email}
+        const user = await adminCollection.findOne(query);
+        res.send(user)
+      }else{
+        res.status(403).send({message: "Forbidden Access!"})
+      }
+
     })
     // blog post Rana Arju Vai
       // Get All Blog post
-      app.post("/articles", async (req, res) => {
+    app.post("/articles", async (req, res) => {
         const query = req.body;
         const article = await articleCollection.insertOne(query);
         res.send(article);
@@ -136,6 +143,34 @@ async function run() {
         res.send(articles);
       });
     // Blog post End here
+    // Shoponsorship
+
+        // post shonsorship
+        app.post("/sponsor", async (req, res) => {
+          const query = req.body;
+          const sponsor = await sponsorCollection.insertOne(query);
+          res.send(sponsor);
+        });
+        app.put('/sponsor/:id', async(req, res) => {
+          const id = req.params.id;
+          const sponsor = req.body;
+          const query = { _id: ObjectId(id) };  
+          const options = { upsert: true };
+           const updateDoc = {
+            $set: sponsor
+          };
+          const result = await sponsorCollection.updateOne(query, updateDoc, options);
+          res.send(result);
+        });
+
+        // get sponsor
+        app.get("/sponsor", async (req, res) => {
+          const sponsor = await sponsorCollection.find({}).toArray();
+          res.send(sponsor);
+        });
+
+        //Sponsorship end here
+
 
           // Md Abdullah Vai start here 
           // Get All Reviews  Customer Reviews collection
