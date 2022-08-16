@@ -49,7 +49,24 @@ async function run() {
     const articleCollection = client.db("allBlogs").collection("blogs");
     const sponsorCollection = client.db('Sponsorship').collection('sponsor');
 
-  
+      // create a document to insert
+      const verifyAdmin =async(req, res, next)=>{
+        const requester = req.decoded.email;
+        const requesterAccount = await adminCollection.findOne({email: requester});
+        const email = await requesterAccount?.email
+     if (email === requester) {
+      if (requesterAccount.role === 'Admin' || requesterAccount.role === 'Editor' || requesterAccount.role === 'Partner' || requesterAccount.role === 'Manager') {
+        next();
+      }
+      else{
+        res.status(403).send({message: "forbidden access"})
+      }
+     }
+     else{
+      res.status(404).send({message: "Not Found!"})
+    }
+    
+    }
      //User Get
      app.get('/user',async(req, res) => {
       const users = await usersCollection.find({}).toArray();
@@ -83,18 +100,6 @@ async function run() {
     res.send({result, token});
   });
 
-  // User Profile Update
-  //  app.put('/user/:email', async(req, res) => {
-  //   const email = req.params.email;
-  //   const userInfo = req.body;
-  //   const filter = {email: email};
-  //   const options = { upsert: true };
-  //   const updateDoc = {
-  //           $set: userInfo
-  //       };
-  //   const result = await usersCollection.updateOne(filter, updateDoc, options);
-  //   res.send(result);
-  //   });
 
     //admin/manager/editor Insert/Update
   app.put('/admin/:email', async(req, res) => {
@@ -109,18 +114,12 @@ async function run() {
     const token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'});
     res.send({result, token});
   });
-        //user user details
         //user details
-    app.get('/admin/:email',verifyJWT, async (req, res) => {
-      const decodedEmail = req.decoded.email;
-      const email = req.params.email;
-      if (email === decodedEmail) {
+    app.get('/admin/:email',verifyJWT,verifyAdmin, async (req, res) => {
+        const email = req.params.email;
         const query = {email:email}
         const user = await adminCollection.findOne(query);
         res.send(user)
-      }else{
-        res.status(403).send({message: "Forbidden Access!"})
-      }
 
     })
     // blog post Rana Arju Vai
@@ -228,7 +227,6 @@ async function run() {
     
         app.get("/package/:id", async (req, res) => {
           const id = req.params.id;
-          console.log(id);
           const query = { _id: ObjectId(id) };
           const package = await PackageCollection.findOne(query);
           res.send(package);
@@ -250,7 +248,6 @@ async function run() {
     
         app.get("/decoration/:id", async (req, res) => {
           const id = req.params.id;
-          console.log(id);
           const query = { _id: ObjectId(id) };
           const decoration = await LocationCollection.findOne(query);
           res.send(decoration);
@@ -258,7 +255,6 @@ async function run() {
     
         app.get("/address/:id", async (req, res) => {
           const id = req.params.id;
-          console.log(id);
           const query = { _id: ObjectId(id) };
           const decoration = await LocationCollection.findOne(query);
           res.send(decoration);
@@ -705,7 +701,6 @@ async function run() {
     app.get("/gallerys", async (req, res) => {
       const query = req.body;
       const gallery = await galleryCollection.find(query).toArray();
-      // console.log("abvx");
       res.send(gallery);
     });
   
