@@ -636,7 +636,7 @@ async function run() {
 
 
     // Fahim vai Starts From here
-    // Get Posts
+
 
     app.post('/create-payment-intent', async (req, res) => {
       const service = req.body;
@@ -651,6 +651,7 @@ async function run() {
       res.send({ clientSecret: paymentIntent.client_secret })
     })
 
+    // Get Posts
     app.get("/posts", async (req, res) => {
       const query = req.body;
       const posts = await postsCollection.find(query).toArray();
