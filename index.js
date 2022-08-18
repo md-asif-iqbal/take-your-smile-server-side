@@ -2,8 +2,11 @@ const jwt = require('jsonwebtoken');
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const stripe = require('stripe')('sk_test_51LXS98B5Y3AeAE8ixEr3XbAzakqMdCNqxsU9YIZyhx8IaSGdcIaHNUdF4zPSaludDIIwz7kxSsnL6bcAkD4EUURB00BKYOJvq7');
 const port = process.env.PORT || 8000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+
+
 require("dotenv").config();
 app.use(cors());
 app.use(express.json());
@@ -634,6 +637,20 @@ async function run() {
 
     // Fahim vai Starts From here
     // Get Posts
+
+    app.post('/create-payment-intent', async (req, res) => {
+      const service = req.body;
+      // console.log(service)
+      const price = service.amount;
+      const amount = price * 100;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
+      })
+      res.send({ clientSecret: paymentIntent.client_secret })
+    })
+
     app.get("/posts", async (req, res) => {
       const query = req.body;
       const posts = await postsCollection.find(query).toArray();
