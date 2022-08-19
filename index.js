@@ -16,24 +16,24 @@ app.use(cors());
 app.use(express.json());
 const stripe = require('stripe')('sk_test_51LXS98B5Y3AeAE8ixEr3XbAzakqMdCNqxsU9YIZyhx8IaSGdcIaHNUdF4zPSaludDIIwz7kxSsnL6bcAkD4EUURB00BKYOJvq7');
 
-
 // verify Authentication
 
-
-// JWT Token here
-function verifyJWT(req, res, next) {
+const verifyJWT = (req, res, next) => {
   const authHeader = req.headers.authorization;
+  const token = authHeader?.split(" ")[1];
   if (!authHeader) {
-    return res.status(401).send({ message: 'UnAuthorized access' });
+    return res.status(404).send({message: "Unauthorize access"})
   }
-  const token = authHeader.split(' ')[1];
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-    if (err) {
-      return res.status(403).send({ message: 'Forbidden access' })
-    }
-    req.decoded = decoded;
-    next();
-  });
+  if (token) {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded) {
+      if (err) {
+        return res.status(403).send({message: "Forbidden access"})
+      }
+      req.decoded= decoded;
+      next();
+});
+}
+  
 }
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.a16moha.mongodb.net/?retryWrites=true&w=majority`;
@@ -62,62 +62,82 @@ async function run() {
  
 
 
-  app.put('/user/:email', async(req, res) => {
+    // create a document to insert
+    const verifyAdmin =async(req, res, next)=>{
+      const requester = req.decoded.email;
+      const requesterAccount = await adminCollection.findOne({email: requester});
+      const email = await requesterAccount?.email
+   if (email === requester) {
+    if (requesterAccount.role === 'Admin' || requesterAccount.role === 'Editor' || requesterAccount.role === 'Partner' || requesterAccount.role === 'Manager') {
+      next();
+    }
+    else{
+      res.status(403).send({message: "forbidden access"})
+    }
+   }
+   else{
+    res.status(404).send({message: "Not Found!"})
+  }
+  
+  }
+   //User Get
+   app.get('/user',async(req, res) => {
+    const users = await usersCollection.find({}).toArray();
+    res.send(users);
+ });
+   //user user details
+   app.get('/user/:email',verifyJWT, async (req, res) => {
+    const decodedEmail = req.decoded.email;
     const email = req.params.email;
-    const user = req.body;
-    const role = {role: "user"}
-    
-    const filter = {email: email};
-    const options = { upsert: true };
-     const updateDoc = {
-      $set: user
-    };
-    const result = await usersCollection.updateOne(filter, updateDoc, options);
-    const token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'});
-    res.send({result, token});
-  });
+    if (email === decodedEmail) {
+      const query = {email:email}
+      const user = await usersCollection.findOne(query);
+      res.send(user)
+    }
+    else{
+      res.status(403).send({message: "Forbidden Access!"})
+    }
+  
+  })
+  //User Insert/Update
+app.put('/user/:email', async(req, res) => {
+  const email = req.params.email;
+  const user = req.body;
+  const filter = {email: email};
+  const options = { upsert: true };
+   const updateDoc = {
+    $set: user
+  };
+  const result = await usersCollection.updateOne(filter, updateDoc, options);
+  const token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'});
+  res.send({result, token});
+});
 
-            //User Get
-            app.get("/usersdata", async (req, res) => {
-              const query = req.body;
-              const usersData = await usersCollection.find(query).toArray();
-              res.send(usersData);
-            });
 
-  // User Profile Update
-   app.put('/user/:email', async(req, res) => {
-    const email = req.params.email;
-    const userInfo = req.body;
-    const filter = {email: email};
-    const options = { upsert: true };
-    const updateDoc = {
-            $set: userInfo
-        };
-    const result = await usersCollection.updateOne(filter, updateDoc, options);
-    res.send(result);
-    });
+  //admin/manager/editor Insert/Update
+app.put('/admin/:email', async(req, res) => {
+  const email = req.params.email;
+  const user = req.body;    
+  const filter = {email: email};
+  const options = { upsert: true };
+   const updateDoc = {
+    $set: user
+  };
+  const result = await adminCollection.updateOne(filter, updateDoc, options);
+  const token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'});
+  res.send({result, token});
+});
+      //user details
+  app.get('/admin/:email',verifyJWT,verifyAdmin, async (req, res) => {
+      const email = req.params.email;
+      const query = {email:email}
+      const user = await adminCollection.findOne(query);
+      res.send(user)
 
+  })
+        
     //admin/manager/editor Insert/Update
-  app.put('/admin/:email', async(req, res) => {
-    const email = req.params.email;
-    const user = req.body;    
-    const filter = {email: email};
-    const options = { upsert: true };
-     const updateDoc = {
-      $set: user
-    };
-    const result = await adminCollection.updateOne(filter, updateDoc, options);
-    const token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'});
-    res.send({result, token});
-  });
-        //user user details
-        //user details
-        app.get('/user/:email',verifyJWT, async (req, res) => {
-          const email = req.params.email;
-          const query = {email:email}
-          const user = await usersCollection.findOne(query);
-          res.send(user)
-      })
+ 
     // blog post Rana Arju Vai
       // Get All Blog post
       app.post("/articles", async (req, res) => {
@@ -147,17 +167,6 @@ async function run() {
           const sponsor = await sponsorCollection.insertOne(query);
           res.send(sponsor);
         });
-        // app.put('/sponsor/:id', async(req, res) => {
-        //   const id = req.params.id;
-        //   const sponsor = req.body;
-        //   const query = { _id: ObjectId(id) };  
-        //   const options = { upsert: true };
-        //    const updateDoc = {
-        //     $set: sponsor
-        //   };
-        //   const result = await sponsorCollection.updateOne(query, updateDoc, options);
-        //   res.send(result);
-        // });
 
         // get sponsor
         app.get("/sponsor", async (req, res) => {
@@ -246,6 +255,12 @@ async function run() {
           res.send(reviews);
         });
 
+    //User Get
+    app.get("/usersdata", async (req, res) => {
+      const query = req.body;
+      const usersData = await usersCollection.find(query).toArray();
+      res.send(usersData);
+    });
 
 
 
