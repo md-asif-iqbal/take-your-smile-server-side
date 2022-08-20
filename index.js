@@ -738,16 +738,16 @@ app.put('/admin/:email', async(req, res) => {
           res.send(PaintJam);
         });
     
-        app.post("/orders", async (req, res) => {
-          const query = req.body;
-          const booking = await bookingCollection.insertOne(query);
-          res.send(booking);
-        });
-        app.get("/orders", async (req, res) => {
-          const query = req.body;
-          const booking = await bookingCollection.find(query).toArray();
-          res.send(booking);
-        });
+        // app.post("/orders", async (req, res) => {
+        //   const query = req.body;
+        //   const booking = await bookingCollection.insertOne(query);
+        //   res.send(booking);
+        // });
+        // app.get("/orders", async (req, res) => {
+        //   const query = req.body;
+        //   const booking = await bookingCollection.find(query).toArray();
+        //   res.send(booking);
+        // });
 
           
         // Abdulla vai End services
@@ -759,6 +759,11 @@ app.put('/admin/:email', async(req, res) => {
       const gallery = await galleryCollection.find(query).toArray();
       // console.log("abvx");
       res.send(gallery);
+    });
+    app.get("/allbookings", async (req, res) => {
+      const query = req.body;
+      const allBooking = await bookingCollection.find(query).toArray();
+      res.send(allBooking);
     });
   
     // Asif's End Here
