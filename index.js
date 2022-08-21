@@ -82,11 +82,11 @@ async function run() {
   
   }
    //User Get
-  //  app.get('/user',async(req, res) => {
-  //   const user = req.body;
-  //   const users = await usersCollection.find({}).toArray();
-  //   res.send(users);
-//  });
+   app.get('/user',async(req, res) => {
+    const user = req.body;
+    const users = await usersCollection.find(user).toArray();
+    res.send(users);
+ });
    //user user details
    app.get('/user/:email',verifyJWT, async (req, res) => {
     const decodedEmail = req.decoded.email;
