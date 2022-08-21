@@ -86,7 +86,7 @@ async function run() {
   //   const user = req.body;
   //   const users = await usersCollection.find({}).toArray();
   //   res.send(users);
- });
+//  });
    //user user details
    app.get('/user/:email',verifyJWT, async (req, res) => {
     const decodedEmail = req.decoded.email;
