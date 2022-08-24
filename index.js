@@ -47,18 +47,18 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-    const customerReviewsCollection = client.db("CustomerReviews").collection("reviews");
-    const RecentEventCollection = client.db("HomePageFeathers").collection("RecentEvents");
-    const SummeryCollection = client.db("HomePageFeathers").collection("Summery");
-    const usersCollection = client.db("applicationUser").collection("users");
-    const adminCollection = client.db("applicationUser").collection("admin");
-    const blogsCollection = client.db("allBlogs").collection("blogs");
-    const galleryCollection = client.db("gallery").collection("galleryData");
-    const articleCollection = client.db("allBlogs").collection("blogs");
-    const sponsorCollection = client.db('Sponsorship').collection('sponsor');
-    const postsCollection = client.db("applicationUser").collection("posts");
-    // const UsersCollection = client.db("applicationUser").collection("users");
-    const bookingCollection = client.db("booking").collection("orders");
+      const customerReviewsCollection = client.db("CustomerReviews").collection("reviews");
+      const RecentEventCollection = client.db("HomePageFeathers").collection("RecentEvents");
+      const SummeryCollection = client.db("HomePageFeathers").collection("Summery");
+      const usersCollection = client.db("applicationUser").collection("users");
+      const adminCollection = client.db("applicationUser").collection("admin");
+      const blogsCollection = client.db("allBlogs").collection("blogs");
+      const galleryCollection = client.db("gallery").collection("galleryData");
+      const articleCollection = client.db("allBlogs").collection("blogs");
+      const sponsorCollection = client.db('Sponsorship').collection('sponsor');
+      const postsCollection = client.db("applicationUser").collection("posts");
+      // const UsersCollection = client.db("applicationUser").collection("users");
+      const bookingCollection = client.db("booking").collection("orders");
      
  
 
@@ -196,6 +196,17 @@ app.put('/admin/:email', async(req, res) => {
             }
             const result = await bookingCollection.insertOne(booking);
             return res.send({ success: true, result });
+          });
+
+          // cancle data
+          app.put("/orders/cancel/:id", async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+              $set: { status: "cancled" },
+            };
+            const result = await bookingCollection.updateOne(filter, updateDoc);
+            res.send(result);
           });
 
 
