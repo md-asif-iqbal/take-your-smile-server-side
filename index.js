@@ -230,6 +230,14 @@ app.put('/admin/:email', async(req, res) => {
             const gallery = await galleryCollection.insertOne(query);
             res.send(gallery);
           });
+          
+          app.delete('/admin/booking/:id', async(req , res )=>{
+            const id = req.params.id;
+            console.log(id);
+            const query = {_id: ObjectId(id)};
+            const products = await bookingCollection.deleteOne(query);
+            res.send(products);
+          })
           // Get All Reviews  Customer Reviews collection
      // Get All Reviews from Customer Reviews collection
 
@@ -766,6 +774,15 @@ app.put('/admin/:email', async(req, res) => {
 
 
     // Asif's Start here
+
+// All Team Start
+    const allTeamMembers = client.db("Team").collection("team");
+    app.get("/teams", async (req, res) => {
+      const query = req.body;
+      const teams = await allTeamMembers.find(query).toArray();
+      res.send(teams);
+    });
+    // All Teams End
     app.get("/gallerys", async (req, res) => {
       const query = req.body;
       const gallery = await galleryCollection.find(query).toArray();
