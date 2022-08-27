@@ -50,7 +50,7 @@ async function run() {
     const RecentEventCollection = client.db("HomePageFeathers").collection("RecentEvents");
     const SummeryCollection = client.db("HomePageFeathers").collection("Summery");
     const usersCollection = client.db("applicationUser").collection("users");
-    const adminCollection = client.db("applicationUser").collection("admin");
+    // const adminCollection = client.db("applicationUser").collection("admin");
     const blogsCollection = client.db("allBlogs").collection("blogs");
     const galleryCollection = client.db("gallery").collection("galleryData");
     const articleCollection = client.db("allBlogs").collection("blogs");
@@ -62,23 +62,22 @@ async function run() {
  
 
 
-    // create a document to insert
+        // create a document to insert
     const verifyAdmin =async(req, res, next)=>{
-      const requester = req.decoded.email;
-      const requesterAccount = await adminCollection.findOne({email: requester});
-      const email = await requesterAccount?.email
-   if (email === requester) {
-    if (requesterAccount.role === 'Admin' || requesterAccount.role === 'Editor' || requesterAccount.role === 'Partner' || requesterAccount.role === 'Manager') {
-      next();
+        const requester = req.decoded.email;
+        const requesterAccount = await usersCollection.findOne({email: requester});
+        const email = await requesterAccount?.email
+    if (email === requester) {
+      if (requesterAccount?.role === 'Admin' || requesterAccount.role === 'Editor' || requesterAccount.role === 'Partner' || requesterAccount.role === 'Manager') {
+        next();
+      }
+      else{
+        res.status(403).send({message: "forbidden access"})
+      }
+      }
+      else{
+        res.status(404).send({message: "Not Found!"})
     }
-    else{
-      res.status(403).send({message: "forbidden access"})
-    }
-   }
-   else{
-    res.status(404).send({message: "Not Found!"})
-  }
-  
   }
    //User Get
    app.get('/user',async(req, res) => {
@@ -89,13 +88,13 @@ async function run() {
    app.get('/user/:email',verifyJWT, async (req, res) => {
     const decodedEmail = req.decoded.email;
     const email = req.params.email;
-    if (email === decodedEmail) {
+    if (decodedEmail === email) {
       const query = {email:email}
       const user = await usersCollection.findOne(query);
       res.send(user)
     }
     else{
-      res.status(403).send({message: "Forbidden Access!"})
+      res.status(403).send({message: "hkjlForbidden Access!"})
     }
   
   })
@@ -123,15 +122,15 @@ app.put('/admin/:email', async(req, res) => {
    const updateDoc = {
     $set: user
   };
-  const result = await adminCollection.updateOne(filter, updateDoc, options);
+  const result = await usersCollection.updateOne(filter, updateDoc, options);
   const token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'});
   res.send({result, token});
 });
       //user details
-  app.get('/admin/:email',verifyJWT,verifyAdmin, async (req, res) => {
+  app.get('/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
       const email = req.params.email;
       const query = {email:email}
-      const user = await adminCollection.findOne(query);
+      const user = await usersCollection.findOne(query);
       res.send(user)
 
   })
@@ -278,7 +277,6 @@ app.put('/admin/:email', async(req, res) => {
     
         app.get("/package/:id", async (req, res) => {
           const id = req.params.id;
-          console.log(id);
           const query = { _id: ObjectId(id) };
           const package = await PackageCollection.findOne(query);
           res.send(package);
@@ -300,7 +298,6 @@ app.put('/admin/:email', async(req, res) => {
     
         app.get("/decoration/:id", async (req, res) => {
           const id = req.params.id;
-          console.log(id);
           const query = { _id: ObjectId(id) };
           const decoration = await LocationCollection.findOne(query);
           res.send(decoration);
@@ -308,7 +305,6 @@ app.put('/admin/:email', async(req, res) => {
     
         app.get("/address/:id", async (req, res) => {
           const id = req.params.id;
-          console.log(id);
           const query = { _id: ObjectId(id) };
           const decoration = await LocationCollection.findOne(query);
           res.send(decoration);
@@ -755,7 +751,6 @@ app.put('/admin/:email', async(req, res) => {
     app.get("/gallerys", async (req, res) => {
       const query = req.body;
       const gallery = await galleryCollection.find(query).toArray();
-      // console.log("abvx");
       res.send(gallery);
     });
   
@@ -767,7 +762,6 @@ app.put('/admin/:email', async(req, res) => {
 // Stripe
 app.post('/create-payment-intent', async (req, res) => {
   const service = req.body;
-  // console.log(service)
   const price = service.amount;
   const amount = price * 100;
   const paymentIntent = await stripe.paymentIntents.create({
@@ -787,7 +781,6 @@ app.get("/posts", async (req, res) => {
 
 app.get("/posts/:id", async (req, res) => {
   const id = req.params.id;
-  // console.log(id)
   const query = { _id: ObjectId(id) };
   const post = await postsCollection.findOne(query);
   res.send(post)
@@ -797,7 +790,6 @@ app.get("/posts/:id", async (req, res) => {
 app.put('/posts/:id', async (req, res) => {
   const id = req.params.id;
   const update = req.body;
-  console.log(update)
   const filter = { _id: ObjectId(id) };
   const options = { upsert: true };
   const updatedDoc = {
