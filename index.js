@@ -284,7 +284,7 @@ app.put('/admin/:email', async(req, res) => {
       res.send(usersData);
     });
     app.delete("/usersdata/:id", async (req, res) => {
-      const email = req.params.id;
+      const id = req.params.id;
       const quary = {_id: ObjectId(id)};
       const usersData = await usersCollection.deleteOne(quary);
       res.send(usersData);
@@ -292,7 +292,7 @@ app.put('/admin/:email', async(req, res) => {
 
 
 
-        // Abdullaa vai starting services
+        // Abdullaa vai starting services f
 
     const PackageCollection = client.db("booking").collection("Packages");
     const LocationCollection = client.db("booking").collection("address");
