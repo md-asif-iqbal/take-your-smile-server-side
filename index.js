@@ -283,6 +283,12 @@ app.put('/admin/:email', async(req, res) => {
       const usersData = await usersCollection.find(query).toArray();
       res.send(usersData);
     });
+    app.delete("/usersdata/:id", async (req, res) => {
+      const email = req.params.id;
+      const quary = {_id: ObjectId(id)};
+      const usersData = await usersCollection.deleteOne();
+      res.send(usersData);
+    });
 
 
 
