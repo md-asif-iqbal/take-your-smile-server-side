@@ -52,7 +52,6 @@ async function run() {
       const RecentEventCollection = client.db("HomePageFeathers").collection("RecentEvents");
       const SummeryCollection = client.db("HomePageFeathers").collection("Summery");
       const usersCollection = client.db("applicationUser").collection("users");
-      const adminCollection = client.db("applicationUser").collection("admin");
       const blogsCollection = client.db("allBlogs").collection("blogs");
       const galleryCollection = client.db("gallery").collection("galleryData");
       const articleCollection = client.db("allBlogs").collection("blogs");
@@ -67,7 +66,7 @@ async function run() {
     // create a document to insert
     const verifyAdmin =async(req, res, next)=>{
       const requester = req.decoded.email;
-      const requesterAccount = await adminCollection.findOne({email: requester});
+      const requesterAccount = await usersCollection.findOne({email: requester});
       const email = await requesterAccount?.email
    if (email === requester) {
     if (requesterAccount.role === 'Admin' || requesterAccount.role === 'Editor' || requesterAccount.role === 'Partner' || requesterAccount.role === 'Manager') {
@@ -126,7 +125,7 @@ app.put('/admin/:email', async(req, res) => {
    const updateDoc = {
     $set: user
   };
-  const result = await adminCollection.updateOne(filter, updateDoc, options);
+  const result = await usersCollection.updateOne(filter, updateDoc, options);
   const token = jwt.sign(filter, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'});
   res.send({result, token});
 });
@@ -134,7 +133,7 @@ app.put('/admin/:email', async(req, res) => {
   app.get('/admin/:email',verifyJWT,verifyAdmin, async (req, res) => {
       const email = req.params.email;
       const query = {email:email}
-      const user = await adminCollection.findOne(query);
+      const user = await usersCollection.findOne(query);
       res.send(user)
 
   })
