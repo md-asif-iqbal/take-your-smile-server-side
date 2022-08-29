@@ -286,7 +286,7 @@ app.put('/admin/:email', async(req, res) => {
     app.delete("/usersdata/:id", async (req, res) => {
       const email = req.params.id;
       const quary = {_id: ObjectId(id)};
-      const usersData = await usersCollection.deleteOne();
+      const usersData = await usersCollection.deleteOne(quary);
       res.send(usersData);
     });
 
