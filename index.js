@@ -198,16 +198,7 @@ app.put('/admin/:email', async(req, res) => {
             return res.send({ success: true, result });
           });
 
-          // cancle data
-          app.put("/orders/cancel/:id", async (req, res) => {
-            const id = req.params.id;
-            const filter = { _id: ObjectId(id) };
-            const updateDoc = {
-              $set: { status: "cancled" },
-            };
-            const result = await bookingCollection.updateOne(filter, updateDoc);
-            res.send(result);
-          });
+          
 
 
           // Asif's Start here
@@ -218,7 +209,26 @@ app.put('/admin/:email', async(req, res) => {
             const result = await cursor.toArray();
             return res.send(result);
           });
-         
+         // cancle data
+         app.put("/orders/cancel/:id", async (req, res) => {
+          const id = req.params.id;
+          const filter = { _id: ObjectId(id) };
+          const updateDoc = {
+            $set: { status: "cancled" },
+          };
+          const result = await bookingCollection.updateOne(filter, updateDoc);
+          res.send(result);
+        });
+        // cancle data
+        app.put("/orders/complete/:id", async (req, res) => {
+          const id = req.params.id;
+          const filter = { _id: ObjectId(id) };
+          const updateDoc = {
+            $set: { status: "complete" },
+          };
+          const result = await bookingCollection.updateOne(filter, updateDoc);
+          res.send(result);
+        });
           app.get("/gallerys", async (req, res) => {
             const query = req.body;
             const gallery = await galleryCollection.find(query).toArray();
