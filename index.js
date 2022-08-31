@@ -286,18 +286,7 @@ app.put('/admin/:email', async(req, res) => {
           res.send(reviews);
         });
 
-    //User Get
-    app.get("/usersdata", async (req, res) => {
-      const query = req.body;
-      const usersData = await usersCollection.find(query).toArray();
-      res.send(usersData);
-    });
-    app.delete("/usersdata/:id", async (req, res) => {
-      const id = req.params.id;
-      const quary = {_id: ObjectId(id)};
-      const usersData = await usersCollection.deleteOne(quary);
-      res.send(usersData);
-    });
+    
 
 
 
@@ -810,10 +799,22 @@ app.put('/admin/:email', async(req, res) => {
       const allBooking = await bookingCollection.find(query).toArray();
       res.send(allBooking);
     });
+    //User Get
+    app.get("/usersdata", async (req, res) => {
+      const query = req.body;
+      const usersData = await usersCollection.find(query).toArray();
+      res.send(usersData);
+    });
+    app.delete("/usersdata/:id", async (req, res) => {
+      const id = req.params.id;
+      const quary = {_id: ObjectId(id)};
+      const usersData = await usersCollection.deleteOne(quary);
+      res.send(usersData);
+    });
   
     // Asif's End Heres
     
-// Fahim vai here
+    // Fahim vai here
 
 
 
@@ -879,27 +880,36 @@ app.put('/admin/:email', async(req, res) => {
       };
       const result = await postsCollection.updateOne(filter, updatedDoc, options);
       res.send(result);
-
-      // comments post
-      app.post("/comments/:id", async (req, res) => {
-        const id = req.params.id;
-        const update = req.body;
-        console.log(update)
-        const filter = { _id: ObjectId(id) };
-        const updatedDoc = {
-          $push: {
-            comments: update.comments
-          }
-        }
-
-
-        const result = await postsCollection.updateOne(filter, updatedDoc, options)
-        res.send(result);
-      });
-
-     
     });
-     //   fahim vai End
+
+    // comments post
+    app.post("/comments/:id", async (req, res) => {
+      const id = req.params.id;
+      const update = req.body;
+      // console.log(update)
+      const filter = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $push: {
+          comments: update.comments
+        }
+      }
+      const result = await postsCollection.updateOne(filter, updatedDoc)
+      res.send(result);
+    });
+
+    app.put("/orders/paid/:id", async (req, res) => {
+      const id = req.params.id;
+      const update = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updateDoc = {
+        $set: { status: update.status },
+      };
+      const result = await bookingCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+
+    //   fahim vai End
 
   } 
   finally {
